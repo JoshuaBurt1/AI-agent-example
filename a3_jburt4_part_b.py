@@ -1,4 +1,4 @@
-#To run: solara run a3_jburt4_part_a.py
+#To run: solara run a3_jburt4_part_b.py
 
 import mesa
 import seaborn as sns
