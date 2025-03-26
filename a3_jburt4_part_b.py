@@ -102,7 +102,7 @@ class WumpusWorldAgent(CellAgent):
             for i in self.MEMORYstring:
                 self.RECENTMEMORIES+=i
             if(self.performanceMeasure % 7 == 0):
-                #self.MEMORYstring.clear()
+                self.MEMORYstring.clear()
                 self.RECENTMEMORIES = self.initialPrompt + self.SENSORstring + self.REMINDERstring
             print("BGS SENSORY INPUT: " + self.RECENTMEMORIES) 
          
