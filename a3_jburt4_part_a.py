@@ -18,7 +18,7 @@ def compute_heroes(model):
     agent_hero = int(sum(not agent.isWumpus and not agent.dead and not agent.isGlitter and not agent.isGold and not agent.isPit and not agent.isBreeze and not agent.isStench for agent in model.agents))                         
     return agent_hero
 
-#Get position in LLM
+#The WumpusHero moves randomly.
 #The hero agent only has room for 1 gold in inventory
 class WumpusWorldAgent(CellAgent):
     """An agent with a Wumpus, hero, pits, and gold."""
@@ -32,7 +32,7 @@ class WumpusWorldAgent(CellAgent):
         self.performanceMeasure = 0
 
         self.LLMstring = ""
-        self.turn = 1
+        self.turn = 3
         self.dead = False        # iv. has a flag dead
 
         self.isWumpus = False    # ii. has a flag isWumpus
@@ -54,18 +54,87 @@ class WumpusWorldAgent(CellAgent):
         self.performanceMeasure = 0
         
     def step(self):
-        self.move()   #ACTUATORS : LLM SHOULD CONTROL THIS
+        self.move()                                         # ACTUATORS : LLM SHOULD CONTROL THIS
         self.place_stench()
-        self.ww_actions()
-        if(not self.isWumpus and not self.dead):            # This is the "NotImplementedHeroAgent"
-            print("BGS LLM string: " + self.LLMstring)      #SENSORS : IF ON GRID SQUARE
+        self.wumpus_world()                                 # SENSORS update
+        if(not self.isWumpus and not self.dead):            
+            print("BGS LLM string: " + self.LLMstring)      # This is the "NotImplementedHeroAgent"
         #if(not self.isWumpus):                             #Performance measure: uncomment to view
         #    print("Performance measure: " + str(self.performanceMeasure))
-        self.glitter_response()
-        self.return_home()
 
     #ACTUATORS
     #this selects to go turn either: left, right, or go forward randomly. Note: an agent does not move forward every turn
+    def move(self):
+        self.glitter_response()  #put in move, the hero must choose to pick it up
+        self.return_home()       #put in move
+        movementChoice = random.randint(0,2) 
+        if(not self.isWumpus and not self.dead):
+            print("Hero movement choice: " + str(movementChoice))
+            if (movementChoice == 0):
+                self.turn_left()
+                self.performanceMeasure -=1
+            elif (movementChoice == 1):
+                self.turn_right()
+                self.performanceMeasure -=1
+            else:
+                self.forward()
+                self.performanceMeasure -=1
+        else:
+            if (movementChoice == 0):
+                self.turn_left()
+                self.performanceMeasure -=1
+            elif (movementChoice == 1):
+                self.turn_right()
+                self.performanceMeasure -=1
+            else:
+                self.forward()
+                self.performanceMeasure -=1
+
+    def turn_left(self):
+        if not self.dead:
+            self.turn+=1
+            if not self.isWumpus:
+                print(f"Hero {self.model.agents.index(self)} turned left.")
+            #else:
+            #    print(f"Wumpus {self.model.agents.index(self)} turned left.")  
+
+    def turn_right(self):
+        if not self.dead:
+            self.turn-=1
+            if not self.isWumpus:
+                print(f"Hero {self.model.agents.index(self)} turned right.")
+            #else:
+            #    print(f"Wumpus {self.model.agents.index(self)} turned right.")
+
+    def forward(self):
+        if not self.dead:
+            x, y = self.pos
+            if (self.turn%4==0):
+                new_position = (x - 1, y)
+                if not self.isWumpus:
+                    print(f"Hero {self.model.agents.index(self)} went left.")
+                #else:
+                #    print(f"Wumpus {self.model.agents.index(self)} went left.")     
+            if (self.turn%4==1):
+                new_position = (x, y - 1)
+                if not self.isWumpus:
+                    print(f"Hero {self.model.agents.index(self)} went down.")
+                #else:
+                #    print(f"Wumpus {self.model.agents.index(self)} went down.")
+            if (self.turn%4==2):
+                new_position = (x + 1, y)
+                if not self.isWumpus:
+                    print(f"Hero {self.model.agents.index(self)} went right.")
+                #else:
+                #    print(f"Wumpus {self.model.agents.index(self)} went right.") 
+            if (self.turn%4==3):
+                new_position = (x, y + 1)
+                if not self.isWumpus:
+                    print(f"Hero {self.model.agents.index(self)} went up.")
+                #else:
+                #    print(f"Wumpus {self.model.agents.index(self)} went up.")  
+            self.model.grid.move_agent(self, new_position)
+
     def glitter_response(self):
         if(not self.isWumpus and not self.dead):
             cellmates = self.model.grid.get_cell_list_contents([self.pos])
@@ -115,67 +184,6 @@ class WumpusWorldAgent(CellAgent):
             self.inventory = None
             self.goldGrabbed = False
 
-    def move(self):
-        movementChoice = random.randint(0,2) 
-        if (movementChoice == 0):
-            self.turn_left()
-            self.performanceMeasure -=1
-        elif (movementChoice == 1):
-            self.turn_right()
-            self.performanceMeasure -=1
-        else:
-            self.forward()
-            self.performanceMeasure -=1
-
-    def turn_left(self):
-        if not self.dead:
-            self.turn-=1
-            if (self.turn < 0):
-                self.turn=3
-            #if self.isWumpus:
-            #    print(f"Wumpus {self.model.agents.index(self)} turned left.")   
-            #else: 
-            #    print(f"Hero {self.model.agents.index(self)} turned left.")   
-
-    def turn_right(self):
-        if not self.dead:
-            self.turn+=1
-            if (self.turn > 3):
-                self.turn=0
-            #if self.isWumpus:
-            #    print(f"Wumpus {self.model.agents.index(self)} turned right.")   
-            #else: 
-            #   print(f"Hero {self.model.agents.index(self)} turned right.")   
-
-    def forward(self):
-        if not self.dead:
-            x, y = self.pos
-            if (self.turn%4==0):
-                new_position = (x - 1, y)
-                #if self.isWumpus:
-                #    print(f"Wumpus {self.model.agents.index(self)} went left.")  
-                #else:
-                #     print(f"Hero {self.model.agents.index(self)} went left.")
-            if (self.turn%4==1):
-                new_position = (x, y - 1)
-                #if self.isWumpus:
-                #    print(f"Wumpus {self.model.agents.index(self)} went down.")  
-                #else:
-                #     print(f"Hero {self.model.agents.index(self)} went down.")
-            if (self.turn%4==2):
-                new_position = (x + 1, y)
-                #if self.isWumpus:
-                #    print(f"Wumpus {self.model.agents.index(self)} went right.")  
-                #else:
-                #     print(f"Hero {self.model.agents.index(self)} went right.")   
-            if (self.turn%4==3):
-                new_position = (x, y + 1)
-                #if self.isWumpus:
-                #    print(f"Wumpus {self.model.agents.index(self)} went up.")  
-                #else:
-                #     print(f"Hero {self.model.agents.index(self)} went up.")   
-            self.model.grid.move_agent(self, new_position)
-
     def place_stench(self):
         if(self.isWumpus):
             stench_cells = self.model.grid.get_neighborhood(
@@ -195,7 +203,7 @@ class WumpusWorldAgent(CellAgent):
                 stench_agent.isGlitter = False
                 stench_agent.isBreeze = False
 
-    def ww_actions(self):
+    def wumpus_world(self):
         self.LLMstring = ""
         others = self.model.grid.get_cell_list_contents([self.pos])
         for other in others:              
