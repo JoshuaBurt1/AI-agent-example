@@ -35,7 +35,7 @@ class WumpusWorldAgent(CellAgent):
         # Create the agent's variable and set the initial values.
         self.performanceMeasure = 0
 
-        self.initialPrompt = "If you sense glitter, you must choose 4. If you carry gold, choose 5. Search the area, choose 1 to move and 2 or 3 to turn. Explore the cave."
+        self.initialPrompt = "Explore the cave. Choices: sense glitter = 4. If you have gold, go to start and choose = 5. Move = 1. Turn = 2 left or 3 right. Avoid breeze and stench unless there is gold. The last thing you write is your choice."
         self.SENSORstring = ""                                              # populated in wumpus_world()
         self.MEMORYstring = ["You are currently at coordinate (0,0). "]     # populated in move(), glitter_response(), and return_home()
         self.REMINDERstring = ""                                            # populated in glitter_response()
@@ -99,9 +99,10 @@ class WumpusWorldAgent(CellAgent):
             heroMovementChoice = 0  # the hero must choose where to move
             #print("BGS SENSORY INPUT: " + self.MEMORYstring[-1])  
             self.RECENTMEMORIES = ""
+            self.RECENTMEMORIES = self.initialPrompt
             for i in self.MEMORYstring:
                 self.RECENTMEMORIES+=i
-            if(self.performanceMeasure % 7 == 0):
+            if(self.performanceMeasure % 4 == 0):
                 self.MEMORYstring.clear()
                 self.RECENTMEMORIES = self.initialPrompt + self.SENSORstring + self.REMINDERstring
             print("BGS SENSORY INPUT: " + self.RECENTMEMORIES) 
@@ -110,7 +111,7 @@ class WumpusWorldAgent(CellAgent):
             #print("TOTAL MEMORIES: ")
             #for i in self.MEMORYstring:
             #    print(i)
-            unparsedResponse = self.model.PromptModel(self.initialPrompt, self.RECENTMEMORIES, " Make decisions weighted on risk and reward in a maximum of 25 words, followed by a manditory numeric choice: ")
+            unparsedResponse = self.model.PromptModel(self.initialPrompt, self.RECENTMEMORIES, " Make decisions weighted on risk and reward in a maximum of 20 words, followed by a manditory numeric choice: ")
             print("INTERNAL CONVERSATION: " + unparsedResponse) # starting from the end obtain the first number
 
             reversed_response = unparsedResponse[::-1]
@@ -252,7 +253,7 @@ class WumpusWorldAgent(CellAgent):
             self.goldGrabbed = False
             self.MEMORYstring.append("You brought gold back to " + str(self.pos) + ". ")
         elif (not self.isWumpus and not self.dead and not self.pos == (0,0) and self.goldGrabbed):
-            self.MEMORYstring.append("You are have gold, but are not at the exit. ")
+            self.MEMORYstring.append("You have gold, but are not at the exit. ")
         elif (not self.isWumpus and not self.dead and self.pos == (0,0) and not self.goldGrabbed):
             self.MEMORYstring.append("You do not gold, but are at the exit. ")
         else:
