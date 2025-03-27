@@ -1,0 +1,26 @@
+To get "microsoft/Phi-4-mini-instruct" to work:
+
+###########
+Check "nvidia-smi" at cmd prompt for output to make sure your system is AI-enabled.
+For HuggingFace transformers you will need to:
+pip install transformers
+pip install datasets
+pip install accelerate
+
+You need at least 8GB to run as a CUDA device. Otherwise, set the sample to "cpu."
+There are quantized versions of the model that might fit in 6GB or 4GB GPUs but they may be less accurate; I don't have samples for these right now.
+
+Open CMD PROMPT:
+
+Microsoft Windows [Version 10.0.26100.3476]
+(c) Microsoft Corporation. All rights reserved.
+C:\Users\_>nvidia-smi
+NVIDIA-SMI 566.14                 Driver Version: 566.14         CUDA Version: 12.7 
+
+############
+
+IF NOT WORKING:
+1. Go to: https://developer.nvidia.com/cuda-toolkit-archive  
+Download this version compatible with torch: https://developer.nvidia.com/cuda-12-6-3-download-archive
+2. Go to: https://pytorch.org/get-started/locally/
+Run the associated CUDA version command in terminal, in python: pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
