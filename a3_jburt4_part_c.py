@@ -105,7 +105,7 @@ class OutbreakAgent(mesa.Agent):
             #if(len(self.MOVEMENTstring) > 0):
             #    print("Agent " + str(self.model.agents.index(self))+ " choice: " + str(self.MOVEMENTstring[-1]) + " of all choices made: " + str(self.MOVEMENTstring[::-1]) + " at simulation step "  + str(self.step_counter))
 
-            if(len(self.MOVEMENTstring) > 0 and (self.MOVEMENTstring[-1]) == 0 and self.pos != (0,0)):
+            if(len(self.MOVEMENTstring) > 0 and (self.MOVEMENTstring[-1]) == 0 and self.pos != (0,0)): # Choice 0 and not at (0,0)
                 if self.pos[0] != 0:
                     new_x = self.pos[0] - 1
                 else:
@@ -115,11 +115,15 @@ class OutbreakAgent(mesa.Agent):
                 else:
                     new_y = self.pos[1]
                 new_position = (new_x, new_y)
-            elif(len(self.MOVEMENTstring) > 0 and (self.MOVEMENTstring[-1]) == 0 and self.pos == (0,0)):
+            elif(len(self.MOVEMENTstring) > 0 and (self.MOVEMENTstring[-1]) == 0 and self.pos == (0,0)): # Choice 0 and at (0,0)
                 new_position = self.pos
+            elif(len(self.MOVEMENTstring) > 0 and (self.MOVEMENTstring[-1]) == 1):                       # Choice 1 
+                new_x = self.pos[0] + 1
+                new_y = self.pos[1] + 1
+                new_position = (new_x, new_y)
             else:
-                new_position = self.random.choice(possible_steps)
-            self.model.grid.move_agent(self, new_position) #this will move to a random adjacent grid square (1 square per render interval)
+                new_position = self.random.choice(possible_steps)                                        # Choice random
+            self.model.grid.move_agent(self, new_position) #this will move to an adjacent grid square (1 square per render interval)
 
 
     #self.SENSORstring AND IMMEDIATE ACTIONS TAKE PLACE HERE
@@ -165,7 +169,7 @@ class OutbreakAgent(mesa.Agent):
 
                     #CONVERSATION
                     print("THE CONVERSATION: ")
-                    conversation_initiator = self.model.PromptModel(self.initialPrompt, self.SENSORstring, "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
+                    conversation_initiator = self.model.PromptModel(self.initialPrompt, str(self.MEMORYstring), "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
                     print(f"INITIAL CONTACT (ZOMBIE DOWN): {conversation_initiator}") 
                     self.MEMORYstring.append(conversation_initiator)
                     ### CURRENT AGENT CHOICE
@@ -216,7 +220,7 @@ class OutbreakAgent(mesa.Agent):
 
                     #CONVERSATION
                     print("THE CONVERSATION: ")
-                    conversation_initiator = self.model.PromptModel(self.initialPrompt, self.SENSORstring, "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
+                    conversation_initiator = self.model.PromptModel(self.initialPrompt, str(self.MEMORYstring), "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
                     print(f"INITIAL CONTACT (MISSED SHOT): {conversation_initiator}") 
                     self.MEMORYstring.append(conversation_initiator)
                     ### CURRENT AGENT CHOICE
@@ -266,7 +270,7 @@ class OutbreakAgent(mesa.Agent):
 
                     #CONVERSATION
                     print("THE CONVERSATION: ")
-                    conversation_initiator = self.model.PromptModel(self.initialPrompt, self.SENSORstring, "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
+                    conversation_initiator = self.model.PromptModel(self.initialPrompt, str(self.MEMORYstring), "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
                     print(f"INITIAL CONTACT (NO AMMO): {conversation_initiator}") 
                     self.MEMORYstring.append(conversation_initiator)
                     ### CURRENT AGENT CHOICE
@@ -315,8 +319,8 @@ class OutbreakAgent(mesa.Agent):
 
                     #CONVERSATION
                     print("THE CONVERSATION: ")
-                    conversation_initiator = self.model.PromptModel(self.initialPrompt, self.SENSORstring, "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
-                    print(f"INITIAL CONTACT (NO AMMO): {conversation_initiator}") 
+                    conversation_initiator = self.model.PromptModel(self.initialPrompt, str(self.MEMORYstring), "Agent " + str(self.model.agents.index(self)) + " in contact with " + str(self.human_cellmate_ids) + ", my thoughts are a maximum of 30 words. ")
+                    print(f"INITIAL CONTACT (ONLY HUMANS): {conversation_initiator}") 
                     self.MEMORYstring.append(conversation_initiator)
                     ### CURRENT AGENT CHOICE
                     reversed_response = conversation_initiator[::-1]
@@ -490,7 +494,7 @@ def agent_portrayal(agent):
 
     return {"size": size, "color": color}
 
-outbreak_model = OutbreakModel(20, 10, 10, 10) # v. When you create your agents, set 10% of them to be Zombies
+outbreak_model = OutbreakModel(20, 20, 10, 10) # v. When you create your agents, set 10% of them to be Zombies
 
 def post_process_space(ax):
     ax.set_aspect("equal")
